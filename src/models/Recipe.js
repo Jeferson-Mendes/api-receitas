@@ -1,6 +1,7 @@
 const mongoose = require('../database/index');
 
 const Schema = mongoose.Schema;
+const { characterRemove } = require('../utils/index');
 
 const RecipeSchema = new Schema({
     title: {
@@ -34,6 +35,12 @@ const RecipeSchema = new Schema({
         default: Date.now
     }
 
+})
+
+RecipeSchema.pre('save', async function(next){
+    const formatedKey_words = characterRemove(this.key_words)
+    this.key_words = formatedKey_words
+    next()
 })
 
 const Recipe = mongoose.model('Recipe', RecipeSchema)

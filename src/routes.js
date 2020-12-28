@@ -16,8 +16,9 @@ router.post('/user/authenticate', UserController.authenticate)
 
 // Recipes routes
 router.get('/recipe', RecipeController.index); // Recipe list
+router.get('/recipe/search', RecipeController.search);
 
-router.use(authMiddleware) // Check if token exists
+router.use(authMiddleware) // Check token 
 
 router.post('/recipe/create', RecipeController.create);
 router.put('/recipe/update', RecipeController.update);

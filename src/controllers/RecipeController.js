@@ -1,6 +1,6 @@
 
 const Recipe = require('../models/Recipe');
-
+const { characterRemove } = require('../utils/index');
 module.exports = {
     async index(req, res) {
         try {
@@ -10,6 +10,21 @@ module.exports = {
 
         }catch(err) {
             return res.status(400).send({ error: 'Fail to get recipe list.' })
+        }
+    },
+
+    async search(req,res) {
+        const searchTerm = req.query.search_query
+        const formatedQuery = characterRemove(null, searchTerm)
+
+        try {
+
+            const recipes = await Recipe.find({key_words: formatedQuery})
+
+            return res.send({recipes})
+
+        }catch(err){
+            return res.status(400).send({error: 'Fail to search recipe'})
         }
     },
 

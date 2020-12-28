@@ -1,6 +1,6 @@
 ## Api de receitas
 
-Uma api para organizar e encontrar as mais diversas receitas. Para uma experiência ainda mais bacana, foi implementado um sistema de autenticação :),
+Uma api para organizar e encontrar as mais diversas receitas. Para uma experiência ainda mais bacana, foi implementado um sistema de autenticação :)
 
 #### Tools
 * node
@@ -23,7 +23,7 @@ Uma api para organizar e encontrar as mais diversas receitas. Para uma experiên
 
 | Verbo | Endereço			 	| Descrição 							| O que passar |
 |-		|	   	  			-	|	-   								| - 		   |
-|**GET**	|`Base_url`/user/all 	|Lista os usuários cadastrados 		 	|		X	   |
+|**GET**	|`Base_url`/user/all 	|Lista os usuários cadastrados 		 	|			   |
 |**GET**	|`Base_url`/user/:id 	|Retorna todas as receitas de um usuário| `parameter:` Id do usuário|
 |**POST**	|`Base_url`/user/create | Cadastra um novo usuário				|`body:` {name, email,password,favorite_food}		   |
 |**POST** | `Base_url`/user/authenticate | Autenticação de usuário			|`body:`{email, password}
@@ -34,14 +34,15 @@ Uma api para organizar e encontrar as mais diversas receitas. Para uma experiên
 > O token deve ser informado no `Authorization` do `Header`, e contem o seguinte formato: 
 > `Authorization: Bearer [token]`
 
-> Obs1: Não esqueça de remover os colchetes( "[]" )
+> Obs1: Não esqueça de remover os colchetes( "[ ]" )
 
-> Obs2: De agora em diante todas as requisições necessitam de token, com exeção da primeira requisição, que nos retorna a lista de receitas. ;)
+> Obs2: De agora em diante todas as requisições necessitam de token, com exceção da **primeira** e **segunda**, que nos retorna a lista de receitas, e receitas específicas a depender da palavra chave informada na query. ;)
 
 
 | Verbo | Endereço			 	| Descrição 							| O que passar |
 |-		|	   	  			-	|	-   								| - 		   |
-|**GET**	|`Base_url`/recipe 	|Nos retorna as receitas cadastradas 		 	|		X	   |
+|**GET**	|`Base_url`/recipe 	|Nos retorna as receitas cadastradas 		 	|		   |
+|**GET**	|`Base_url`/recipe/search?search_query={lasanha}	| Nos retorna todas as receitas que possuem a palavra chave | `query:` **search_query** com a palavra chave
 |**POST**	|`Base_url`/recipe/create 	|Cria uma receita| `body:`{ title: "teste", description: "teste", ingredients: ["01","02"], preparation_steps: ["01","02"], key_words: ["teste","teste"]}|
 |**PUT**	|`Base_url`/recipe/update | Edita uma receita			|`body:`{ title: "teste", description: "teste", ingredients: ["01","02"], preparation_steps: ["01","02"], key_words: ["teste","teste"]}	`header: RecipeId (id da receita)`	   |
 |**DELETE** | `Base_url`recipe/delete/:id | Deleta uma receita			|`parameter:`Id da receita
