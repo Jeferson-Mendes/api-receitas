@@ -1,6 +1,6 @@
-const mongoose = require('../database/index');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const Schema = mongoose.Schema;
 const { characterRemove } = require('../utils/index');
 
 const RecipeSchema = new Schema({
