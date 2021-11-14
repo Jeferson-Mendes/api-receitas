@@ -1,6 +1,6 @@
 ## Api de receitas
 
-Uma api para organizar e encontrar as mais diversas receitas. Para uma experiência ainda mais bacana, foi implementado um sistema de autenticação :)
+Uma api para organizar e encontrar as mais diversas receitas. Para uma experiência ainda mais bacana, foi implementado um sistema de autenticação e upload de imagem usando o cloudinary :)
 
 #### Tools
 * node
@@ -9,6 +9,8 @@ Uma api para organizar e encontrar as mais diversas receitas. Para uma experiên
 * mongoose
 * bcrypt
 * JWT
+* Multer
+* Cloudinary
 
 #### Para testar na sua máquina
 * Ter o [mongoDB](https://www.mongodb.com/) instalado
