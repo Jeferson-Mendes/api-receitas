@@ -1,9 +1,12 @@
 
 const User = require('../models/User');
 const Recipe = require('../models/Recipe');
+const Resource = require('../models/Resource');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const authConfig = require('../config/auth.json');
+const cloudinary = require('../config/cloudnary');
+const { update } = require('../models/User');
 
 function generateToken( params = {}){
     return jwt.sign( params, authConfig.secret, { // Configurando o nosso token
@@ -15,7 +18,7 @@ module.exports = {
 
     async index(req, res) {
         try{
-            const users = await User.find({});
+            const users = await User.find({}).populate('resource');
             return res.send({ users })
         }catch(err){
             return res.status(400).send({error: 'Fail to get users'})
@@ -42,22 +45,57 @@ module.exports = {
     },
 
     async create(req, res){
-        const { email } = req.body;
+        const { name, email, password, favorite_food } = req.body;
+        const file = req.file;
 
         try {
             if( await User.findOne({ email })){
                 return res.status(400).send({error: 'User already exists.'})
             }
-            const user = await User.create(req.body);
-            
-            user.password = undefined; // Para não vir a senha no select
 
-            return res.send({ 
-                user,
-                token: generateToken({id: user.id, username: user.name})
-            })
+            if (file) {
+                // create resource
+
+                const uploadResult = await cloudinary.uploader.upload(file.path, (error, result) => {
+                    if(error) {
+                        return res.status(400).send({ error: 'Fail to upload image' })
+                    }
+                })
+
+                const resource = await Resource.create({
+                    cloudinary_id: uploadResult.public_id,
+                    secure_url: uploadResult.secure_url
+                })
+
+                const userData = {
+                    name,
+                    email,
+                    password,
+                    favorite_food,
+                    resource: resource._id,
+                }
+    
+                const user = await User.create(userData);
+                
+                user.password = undefined; // Para não vir a senha no select
+    
+                return res.send({ 
+                    user,
+                    token: generateToken({id: user.id, username: user.name})
+                })
+            }
+
+            const user = await User.create(req.body);
+                
+                user.password = undefined; // Para não vir a senha no select
+    
+                return res.send({ 
+                    user,
+                    token: generateToken({id: user.id, username: user.name})
+                })
+
         }catch(err) {
-            //error
+            console.log(err)
             return res.status(400).send({ error: 'Registration failed' })
         }
     },
@@ -81,5 +119,37 @@ module.exports = {
             user, 
             token: generateToken({id: user.id, username: user.name})
         })
+    },
+
+    async updateResourse(req, res) {
+        const userId = req.userId;
+        const filePath = req.file;
+
+        try {
+            if (!filePath) {
+                return res.status(400).send({ error: 'Field image is required' });
+            }
+    
+            const user = await User.findById(userId).populate('resource');
+    
+            if (!user) {
+                return res.status(404).send({ error: 'User not found' })
+            }
+            
+            // delete image from cloudinary
+            await cloudinary.uploader.destroy(user.resource.cloudinary_id)
+
+            // upload new image to cloudinary
+            const uploadResult = await cloudinary.uploader.upload(filePath.path);
+
+            // update resource document
+            await Resource.updateOne(
+                { _id: user.resource._id },
+                { cloudinary_id: uploadResult.public_id, secure_url: uploadResult.secure_url  })
+
+            return res.json({ user, status: 200 });
+        } catch (error) {
+            return res.status(401).send({error: 'Internal server error'})            
+        }
     }
 }

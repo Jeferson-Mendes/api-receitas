@@ -1,4 +1,4 @@
-const mongoose = require('../database/index');
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10
 
@@ -20,6 +20,7 @@ const UserSchema = new Schema({
         required: true,
         select: false
     },
+    resource: { type: Schema.Types.ObjectId, ref: 'Resource', required: false},
     favorite_food: {
         type: String
     },

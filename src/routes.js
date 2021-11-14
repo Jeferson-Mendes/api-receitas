@@ -5,13 +5,16 @@ const authMiddleware = require('./middleware/auth');
 const RecipeController = require('./controllers/RecipeController');
 const UserController = require('./controllers/UserController');
 
+const upload = require('./config/multer');
+
 const router = express.Router()
 
 // User routes
-router.get('/user/all', UserController.index )
-router.get('/user/:id', UserController.detail)
-router.post('/user/create', UserController.create)
-router.post('/user/authenticate', UserController.authenticate)
+router.get('/user/all', UserController.index );
+router.get('/user/:id', UserController.detail);
+router.post('/user/create', upload.single('image'), UserController.create);
+router.post('/user/authenticate', UserController.authenticate);
+router.patch('/user/update-photo', authMiddleware, upload.single('image'), UserController.updateResourse);
 
 
 // Recipes routes
