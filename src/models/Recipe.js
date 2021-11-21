@@ -22,14 +22,9 @@ const RecipeSchema = new Schema({
     key_words: {
         type: [String]
     },
-    authorId: {
-        type: String,
-        required: true
-    },
-    authorName: {
-        type: String,
-        required: true
-    },
+    category: { type: Schema.Types.ObjectId, ref:'RecipeCategory', required: true},
+    author: { type: Schema.Types.ObjectId, ref: 'User', required: true},
+    resource: { type: Schema.Types.ObjectId, ref: 'Resource', required: false },
     createdAt: {
         type: Date,
         default: Date.now

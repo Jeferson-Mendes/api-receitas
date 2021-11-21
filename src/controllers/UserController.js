@@ -18,7 +18,7 @@ module.exports = {
 
     async index(req, res) {
         try{
-            const users = await User.find({}).populate('resource');
+            const users = await User.find({});
             return res.send({ users })
         }catch(err){
             return res.status(400).send({error: 'Fail to get users'})
@@ -28,18 +28,17 @@ module.exports = {
     async detail(req, res) { // Get user detail
         const userId = req.params.id;
 
-        await User.findOne({_id: userId}, (err) => {
-            if(err) {
-                return res.status(400).send({error: 'User not found', err})
-            }
-        })
-        
         try {
-            const userRecipes = await Recipe.find({authorId: userId});
-            
-            return res.send({ userRecipes })
+            const user = await User.findOne({ _id: userId }).populate('resource');
+
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' })
+            }
+        
+            return res.json({ user })
         }catch(err){
-            return res.status(400).send({error: 'Fail to get user detail'})
+            console.log(err);
+            return res.status(400).send({error: 'Internal server error'})
         }
 
     },
