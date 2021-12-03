@@ -6,10 +6,16 @@ const mongoose = require('mongoose')
 const { characterRemove } = require('../utils/index');
 module.exports = {
     async index(req, res) {
-        try {
+        const limit = parseInt(String(req.query.limit)) || 10;
+        const page = parseInt(String(req.query.page)) || 1;
+        const skip = limit * (page - 1); 
 
-            const recipes = await Recipe.find({});
-            return res.send({ recipes })
+        try {
+            const recipes = await Recipe.find({}).limit(limit).skip(skip);
+            const TotalRecipes = await Recipe.find({}).countDocuments();
+
+            const totalPages = Math.ceil(TotalRecipes / limit);
+            return res.send({ recipes, limit, page, totalPages })
 
         }catch(err) {
             return res.status(400).send({ error: 'Fail to get recipe list.' })

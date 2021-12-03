@@ -17,9 +17,17 @@ function generateToken( params = {}){
 module.exports = {
 
     async index(req, res) {
+        const limit = parseInt(String(req.query.limit)) || 10;
+        const page = parseInt(String(req.query.page)) || 1;
+        const skip = limit * (page - 1);
+
         try{
-            const users = await User.find({});
-            return res.send({ users })
+            const users = await User.find({}).limit(limit).skip(skip);
+            const TotalUsers = await User.find({}).countDocuments();
+
+            const totalPages = Math.ceil(TotalUsers / limit);
+
+            return res.send({ users, limit, page, totalPages });
         }catch(err){
             return res.status(400).send({error: 'Fail to get users'})
         }
@@ -44,7 +52,7 @@ module.exports = {
     },
 
     async create(req, res){
-        const { name, email, password, favorite_food } = req.body;
+        const { name, email, password } = req.body;
         const file = req.file;
 
         try {
@@ -70,7 +78,6 @@ module.exports = {
                     name,
                     email,
                     password,
-                    favorite_food,
                     resource: resource._id,
                 }
     
@@ -149,6 +156,69 @@ module.exports = {
             return res.json({ user, status: 200 });
         } catch (error) {
             return res.status(401).send({error: 'Internal server error'})            
+        }
+    },
+
+    async update(req, res) {
+        const { name, email } = req.body;
+        const { userId } = req.params;
+        const userAuthenticatedId = req.userId;
+
+        if (userAuthenticatedId !== userId) {
+            return res.status(400).send({error: 'Você não tem permissão para acessar esse recurso'})
+        }
+
+        const UserEmailExists = await User.findOne({ email });
+
+        if (UserEmailExists && UserEmailExists.id !== userAuthenticatedId) {
+            return res.status(400).send({error: 'Email já está sendo utilizado'})
+        }
+
+        try {
+            const user = await User.findOne({ _id: userId });
+
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário não existe' });
+            }
+
+            await User.updateOne({ _id: userId }, { name, email }, function(error){
+                if(error) {
+                    return res.status(400).json({ error: 'Falha ao atualizar usuário' });
+                }
+            });
+
+            return res.json({ user, status: 200 });
+        } catch (error) {
+            return res.status(401).send({error: 'Internal server error'});
+        }
+    },
+
+    async updatePassword(req, res) {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.userId; 
+
+        try {
+            const user = await User.findOne({ _id: userId }).select('+password');
+
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário não existe' })
+            }
+
+            const passwordEquals = await bcrypt.compare(currentPassword, user.password);
+
+            if (!passwordEquals) {
+                return res.status(401).json({ error: 'Senha atual incorreta' });
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            await User.updateOne({ _id: userId }, { password: hashedPassword });
+
+            user.password = undefined;
+            
+            return res.json({ user, status: 200 });            
+        } catch (error) {
+            console.log(error)
+            return res.status(401).send({error: 'Internal server error'})
         }
     }
 }

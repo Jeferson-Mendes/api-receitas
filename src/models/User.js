@@ -21,9 +21,6 @@ const UserSchema = new Schema({
         select: false
     },
     resource: { type: Schema.Types.ObjectId, ref: 'Resource', required: false},
-    favorite_food: {
-        type: String
-    },
     createdAt: {
         type: Date,
         default: Date.now
