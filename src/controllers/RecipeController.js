@@ -11,7 +11,7 @@ module.exports = {
         const skip = limit * (page - 1); 
 
         try {
-            const recipes = await Recipe.find({}).limit(limit).skip(skip);
+            const recipes = await Recipe.find({}).populate('author').populate('resource').limit(limit).skip(skip);
             const TotalRecipes = await Recipe.find({}).countDocuments();
 
             const totalPages = Math.ceil(TotalRecipes / limit);
@@ -26,7 +26,7 @@ module.exports = {
         const { recipeId } = req.params;
 
         try {
-            const recipe = await Recipe.findOne({ _id: recipeId }).populate('author').populate('resource').populate('category');
+            const recipe = await Recipe.findOne({ _id: recipeId }).populate({ path: 'author', populate: { path: 'resource' } }).populate('resource').populate('category');
 
             if (!recipe) {
                 return res.status(404).json({ error: 'Recipe not found' })
@@ -54,6 +54,20 @@ module.exports = {
         }
     },
 
+    async getByCategory(req,res) {
+        const { categories } = req.query;
+        const categoriesArray = String(categories).split(',');
+
+        try {
+            const recipes = await Recipe.find({ category: { $in: categoriesArray } });
+
+            return res.json({ recipes, status: 200 });
+        } catch (error) {
+            console.log(error)
+            return res.status(400).send({error: 'Internal Server Error'})
+        }
+    },
+
     async create(req, res) {
         const userId = req.userId;
         const file = req.file;
@@ -77,6 +91,7 @@ module.exports = {
                 const data = {
                     ...req.body,
                     author: userId,
+                    category: req.body.category_id,
                     resource: resource._id
                 }
             
@@ -93,6 +108,7 @@ module.exports = {
             const recipe = await Recipe.create(data)
             return res.send(recipe)
         }catch(err){
+            console.log(err)
             return res.status(400).send({ error: 'Fail to create recipe'})
         }
     },
