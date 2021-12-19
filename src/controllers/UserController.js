@@ -109,7 +109,7 @@ module.exports = {
     async authenticate(req, res) {
 
         const { email, password } = req.body;
-        const user = await User.findOne({ email }).select('+password'); // Encontra um email igual ao do req.body, e busca a senha tbm
+        const user = await User.findOne({ email }).select('+password').populate('resource'); // Encontra um email igual ao do req.body, e busca a senha tbm
 
         if(!user) {
             return res.status(400).send({error: 'User not found'})
