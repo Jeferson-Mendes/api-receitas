@@ -45,7 +45,8 @@ module.exports = {
 
         try {
 
-            const recipes = await Recipe.find({key_words: formatedQuery})
+            const recipes = await Recipe.find(
+                { $or: [{ key_words: {$regex: formatedQuery} }, { title: {$regex: formatedQuery} }, { description: {$regex: formatedQuery} }] }).populate('resource').populate('author')
 
             return res.send({recipes})
 

@@ -127,7 +127,7 @@ module.exports = {
         })
     },
 
-    async updateResourse(req, res) {
+    async updateResource(req, res) {
         const userId = req.userId;
         const filePath = req.file;
 
@@ -148,12 +148,26 @@ module.exports = {
             // upload new image to cloudinary
             const uploadResult = await cloudinary.uploader.upload(filePath.path);
 
-            // update resource document
-            await Resource.updateOne(
-                { _id: user.resource._id },
-                { cloudinary_id: uploadResult.public_id, secure_url: uploadResult.secure_url  })
+            if(user.resource) {
+                // update resource document
+                await Resource.updateOne(
+                    { _id: user.resource._id },
+                    { cloudinary_id: uploadResult.public_id, secure_url: uploadResult.secure_url  })
+    
+                return res.json({ user, status: 200 });
+            } else {
 
-            return res.json({ user, status: 200 });
+                const resource = Resource.create({
+                    cloudinary_id: uploadResult.public_id,
+                    secure_url: uploadResult.secure_url
+                });
+
+                await User.updateOne({ _id: user._id }, { resource: resource._id });
+                
+                return res.json({ user, status: 200 });
+            }
+
+
         } catch (error) {
             return res.status(401).send({error: 'Internal server error'})            
         }
